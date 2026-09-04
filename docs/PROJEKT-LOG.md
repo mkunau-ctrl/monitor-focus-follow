@@ -6,26 +6,45 @@ Wer das Projekt fortsetzt, soll hier verstehen können, *was*, *warum* und
 
 ---
 
-## 2026-09-04 – Verbesserungen 1–4 + 7 (v1.2) – IN ARBEIT
+## 2026-09-04 – Verbesserungen 1–4 + 7 (v1.2)
 
-**Was:** Geplant sind fünf kleine Verbesserungen:
-1. Einmal-Instanz-Sperre (Mutex), damit nie mehrere Kopien gleichzeitig laufen.
-2. Bessere Fensterfilter (Tool-Fenster, nicht-aktivierbare Fenster, Startmenü,
-   Task-Ansicht, Benachrichtigungs-Popups ausschließen).
-3. Absturz-Log beim Start (`crash.log`), weil das Programm versteckt läuft und
-   ein Startfehler sonst unsichtbar bleibt.
-4. Pause-Hotkey zum schnellen An/Aus ohne Task-Manager.
-7. Zuverlässigere Vollbild-Erkennung über `SHQueryUserNotificationState` statt
-   nur "Fensterrechteck = Monitorgröße".
+**Was:** Fünf kleine, unabhängige Verbesserungen an v1.1:
+1. **Einmal-Instanz-Sperre** (benannter Mutex): eine zweite gestartete Kopie
+   beendet sich sofort. Verhindert das Chaos mit mehreren laufenden Kopien.
+2. **Bessere Fensterfilter:** zusätzlich ausgeschlossen sind jetzt die
+   Taskleiste auf dem 2. Monitor (`Shell_SecondaryTrayWnd`), Task-Ansicht/
+   Alt-Tab, Benachrichtigungs- und Overlay-Fenster sowie Fenster mit
+   `WS_EX_TOOLWINDOW` / `WS_EX_NOACTIVATE` (Widgets, manche Overlays).
+3. **Absturz-Log** `crash.log` neben dem Skript – wird immer geschrieben,
+   auch wenn Logging in der Config aus ist. Fängt Startfehler ab (z. B.
+   `Add-Type` schlägt fehl), die sonst unsichtbar wären, weil das Programm
+   versteckt läuft.
+4. **Pause-Hotkey** `Strg+Alt+Pause` (Taste per `config.psd1` änderbar:
+   Pause, ScrollLock, F9–F12): schaltet das Fokus-Folgen an/aus, ohne den
+   Task-Manager. Umgesetzt über Tastenzustand-Abfrage in der Schleife mit
+   Flankenerkennung – kein Message-Loop nötig.
+7. **Zuverlässigere Vollbild-Erkennung:** zusätzlich zur bisherigen
+   „Fenster = Monitorgröße"-Prüfung wird jetzt `SHQueryUserNotificationState`
+   der Shell abgefragt (erkennt echte D3D-Vollbild-Spiele und
+   Präsentationsmodus sauber).
 
-**Warum:** Nutzer hat v1.1 als "funktioniert perfekt" bestätigt und nach
-sinnvollen nächsten Schritten gefragt. Punkte 5 (GitHub Actions) und 6
-(Config-Hot-Reload) wurden zurückgestellt.
+**Warum:** Nutzer hat v1.1 als „funktioniert perfekt" bestätigt und nach
+sinnvollen nächsten Schritten gefragt.
 
-**Stand:** Noch nicht umgesetzt. Plan wird als
-`docs/superpowers/plans/2026-09-04-verbesserungen-v1.2.md` geschrieben.
+**Entscheidungen:**
+- Ideen **5** (GitHub Actions für die Tests) und **6** (Config ohne Neustart
+  neu laden) zurückgestellt – bei Bedarf einzeln.
+- Hotkey-Modifikatoren fest auf Strg+Alt, nur die Haupttaste konfigurierbar
+  (spart das Parsen beliebiger Hotkey-Strings, deckt die sinnvollen Fälle ab).
+- Mutex-Name ohne `Global\`-Präfix (pro Benutzersitzung reicht, keine
+  Rechteprobleme).
 
-**Offene Punkte:** siehe oben; nach Umsetzung 5 und 6 bei Bedarf.
+**Stand danach:** Umgesetzt, 14 Pester-Tests grün. Single-Instance,
+crash.log und unbekannte-ToggleKey-Warnung manuell verifiziert.
+Plan: `docs/superpowers/plans/2026-09-04-verbesserungen-v1.2.md`.
+
+**Offene Punkte:** Ideen 5 und 6. Hotkey-Umschaltung live noch nicht vom
+Nutzer bestätigt (Flankenerkennung getestet, Tastendruck nur manuell prüfbar).
 
 ---
 

@@ -263,6 +263,32 @@ Webseite). Windows sieht dort nur ein Fensterhandle; das saubere Setzen
 des Feld-Fokus wuerde einen simulierten Klick an der Mausposition
 erfordern (Risiko: loest ungewollt Buttons/Links aus).
 
+## Aenderung v1.2 (2026-09-04): fuenf kleine Verbesserungen
+
+Siehe `docs/superpowers/plans/2026-09-04-verbesserungen-v1.2.md` und
+`docs/PROJEKT-LOG.md`. Kurz:
+
+1. **Einmal-Instanz-Sperre** in `MonitorFocusFollow.ps1` (benannter
+   `System.Threading.Mutex` `MonitorFocusFollow_SingleInstance`): zweite
+   Instanz beendet sich sofort mit Exit 0.
+2. **Erweiterte Fensterfilter:** `Test-IsFocusableWindow` bekommt den
+   Parameter `[bool]$HasAcceptableExStyle` (aus
+   `Native.HasAcceptableExStyle`, prueft `WS_EX_TOOLWINDOW` /
+   `WS_EX_NOACTIVATE`). `$blockedClasses` erweitert um
+   `Shell_SecondaryTrayWnd`, `XamlExplorerHostIslandWindow`,
+   `ForegroundStaging`, `MultitaskingViewFrame`, `TaskListThumbnailWnd`,
+   `NotifyIconOverflowWindow`, `TopLevelWindowForOverflowXamlIsland`,
+   `Windows.UI.Composition.DesktopWindowContentBridge`.
+3. **`crash.log`** neben dem Skript (immer geschrieben): faengt Startfehler
+   und unerwarteten Abbruch der Hauptschleife ab.
+4. **Pause-Hotkey** `Strg+Alt+<ToggleKey>` (Config `EnableToggleHotkey`,
+   `ToggleKey` aus Pause/ScrollLock/F9-F12). `Native.IsKeyDown(vk)` +
+   Flankenerkennung in der Schleife; Zustand `$paused` ueberspringt die
+   Fokus-Logik.
+5. **Vollbild-Erkennung:** `Native.IsForegroundFullscreen()` fragt
+   zusaetzlich `SHQueryUserNotificationState` ab (QUNS_BUSY /
+   QUNS_RUNNING_D3D_FULL_SCREEN / QUNS_PRESENTATION_MODE).
+
 ## Zukunftsidee: Multi-Seat (nicht v1)
 
 Ziel: zwei Mäuse + zwei Tastaturen, jede fest einem Monitor zugeordnet,

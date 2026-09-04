@@ -24,6 +24,12 @@
     # (schuetzt Markieren per Ziehen und das Verschieben von Fenstern).
     PauseWhileMouseDown = $true
 
+    # Pause-Hotkey: Strg + Alt + <ToggleKey> schaltet das Folgen an/aus,
+    # ohne den Task-Manager. Erlaubte Werte fuer ToggleKey:
+    # 'Pause', 'ScrollLock', 'F9', 'F10', 'F11', 'F12'.
+    EnableToggleHotkey = $true
+    ToggleKey          = 'Pause'
+
     # Prozessnamen (ohne ".exe"), die nie den Fokus bekommen sollen.
     # Beispiel: @('vlc', 'mpc-hc')
     ExcludeProcesses  = @()

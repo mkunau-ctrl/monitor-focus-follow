@@ -36,19 +36,31 @@ function Test-ShouldSwitchWindow {
 function Test-IsFocusableWindow {
     <#
         Filtert Fenster, die keinen Fokus bekommen sollen: Desktop,
-        Taskleiste, unsichtbare/Nicht-Top-Level-Fenster und Prozesse aus
-        der Ausschlussliste.
+        Taskleisten (auch die auf dem 2. Monitor), Task-Ansicht/Alt-Tab,
+        Benachrichtigungs- und Overlay-Fenster, unsichtbare/Nicht-Top-Level-
+        Fenster, nicht-aktivierbare bzw. Tool-Fenster und Prozesse aus der
+        Ausschlussliste.
     #>
     param(
         [string]$ClassName,
         [string]$ProcessName,
         [bool]$IsVisibleTopLevel,
+        [bool]$HasAcceptableExStyle,
         [string[]]$ExcludeProcesses
     )
 
     if (-not $IsVisibleTopLevel) { return $false }
+    if (-not $HasAcceptableExStyle) { return $false }
 
-    $blockedClasses = @('WorkerW', 'Progman', 'Shell_TrayWnd', 'Windows.UI.Core.CoreWindow')
+    $blockedClasses = @(
+        'WorkerW', 'Progman',
+        'Shell_TrayWnd', 'Shell_SecondaryTrayWnd',
+        'Windows.UI.Core.CoreWindow',
+        'XamlExplorerHostIslandWindow', 'ForegroundStaging',
+        'MultitaskingViewFrame', 'TaskListThumbnailWnd',
+        'NotifyIconOverflowWindow', 'TopLevelWindowForOverflowXamlIsland',
+        'Windows.UI.Composition.DesktopWindowContentBridge'
+    )
     if ($blockedClasses -contains $ClassName) { return $false }
 
     $pn = ($ProcessName -replace '\.exe$', '').ToLowerInvariant()

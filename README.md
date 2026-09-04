@@ -33,7 +33,10 @@ Symbol).
 
 ## Beenden
 
-Es gibt bewusst keinen Beenden-Knopf. So beendest du es:
+**Kurz pausieren statt beenden:** `Strg`+`Alt`+`Pause` schaltet das
+Fokus-Folgen aus und wieder an (Taste änderbar über `ToggleKey`).
+
+So beendest du es ganz:
 
 1. Task-Manager öffnen (`Strg`+`Umschalt`+`Esc`).
 2. Reiter **Details**.
@@ -61,6 +64,8 @@ gilt der Standard):
 | `RaiseWindow` | `$false` | Fenster zusätzlich in der Z-Reihenfolge nach vorne holen |
 | `PauseOnFullscreen` | `$true` | kein Fokuswechsel, solange vorne eine Vollbild-App läuft |
 | `PauseWhileMouseDown` | `$true` | kein Fokuswechsel, solange eine Maustaste gedrückt ist |
+| `EnableToggleHotkey` | `$true` | Pause-Hotkey `Strg`+`Alt`+`<ToggleKey>` aktiv |
+| `ToggleKey` | `Pause` | Taste für den Hotkey: `Pause`, `ScrollLock`, `F9`–`F12` |
 | `ExcludeProcesses` | `@()` | Prozessnamen (ohne `.exe`), die nie fokussiert werden |
 | `LogToFile` | `$false` | Ereignisse zusätzlich in eine Datei schreiben |
 | `LogPath` | `focus.log` | Pfad der Logdatei (relativ zum Projektordner) |
@@ -94,7 +99,9 @@ die manuelle Checkliste unten geprüft.
 
 - Läuft komplett lokal. **Keine Netzwerkverbindung, keine Telemetrie.**
 - Das Programm liest **keine Tastatureingaben** mit. Es reagiert nur auf die
-  Mausposition und aktiviert Fenster.
+  Mausposition und aktiviert Fenster. Für den Pause-Hotkey wird lediglich
+  abgefragt, ob `Strg`, `Alt` und die eine Hotkey-Taste *gerade gedrückt*
+  sind – nichts davon wird gespeichert.
 - Standardmäßig wird **keine Logdatei** geschrieben. Die Konsolenausgabe gibt
   es nur beim manuellen Start mit `-Log`.
 - Wenn `LogToFile = $true` gesetzt ist, enthält die Datei nur Zeitstempel,
@@ -113,8 +120,12 @@ die manuelle Checkliste unten geprüft.
    hinaus markieren → Fokus springt nicht weg.
 5. Vollbild-Spiel/-Video, Maus kurz rüber und zurück → kein Fokuswechsel
    (bei `PauseOnFullscreen = $true`).
-6. `Strg`+`C` im Konsolenbetrieb → Ausgabe „beendet".
-7. Nach `Install-Autostart.ps1` und Neuanmeldung → Programm läuft, im
+6. `Strg`+`Alt`+`Pause` → Log zeigt „pausiert", Fokus folgt nicht mehr;
+   nochmal → „aktiv".
+7. Zweite Kopie starten, während eine läuft → die zweite beendet sich sofort
+   („bereits aktiv").
+8. `Strg`+`C` im Konsolenbetrieb → Ausgabe „beendet".
+9. Nach `Install-Autostart.ps1` und Neuanmeldung → Programm läuft, im
    Task-Manager beendbar.
 
 ## Zukunftsideen (nicht enthalten)

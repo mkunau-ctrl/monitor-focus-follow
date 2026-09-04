@@ -39,9 +39,14 @@ namespace MFF
         [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int vKey);
         [DllImport("user32.dll")] private static extern bool SetProcessDPIAware();
         [DllImport("user32.dll")] private static extern bool SetProcessDpiAwarenessContext(IntPtr value);
+        [DllImport("user32.dll")] private static extern int GetWindowLong(IntPtr hwnd, int index);
+        [DllImport("shell32.dll")] private static extern int SHQueryUserNotificationState(out int state);
 
         // ----- Konstanten -----
         private const uint GA_ROOT = 2;
+        private const int  GWL_EXSTYLE = -20;
+        private const int  WS_EX_TOOLWINDOW = 0x00000080;
+        private const int  WS_EX_NOACTIVATE = 0x08000000;
         private const uint SPI_SETFOREGROUNDLOCKTIMEOUT = 0x2001;
         private static readonly IntPtr HWND_TOP = IntPtr.Zero;
         private const uint SWP_NOMOVE = 0x0002;
@@ -115,10 +120,25 @@ namespace MFF
             catch { return false; }
         }
 
-        // Deckt das Vordergrundfenster seinen ganzen Monitor ab und ist es
-        // nicht die Shell/der Desktop?
+        // True, wenn ein Wechsel besser unterbleibt: die Shell meldet
+        // Vollbild-/Praesentations-/Beschaeftigt-Zustand ODER das
+        // Vordergrundfenster deckt seinen ganzen Monitor ab.
         public static bool IsForegroundFullscreen()
         {
+            // 1. Offizielle Shell-Abfrage (zuverlaessig bei echten Spielen).
+            try
+            {
+                int state;
+                if (SHQueryUserNotificationState(out state) == 0)
+                {
+                    // 2 = QUNS_BUSY, 3 = QUNS_RUNNING_D3D_FULL_SCREEN,
+                    // 4 = QUNS_PRESENTATION_MODE
+                    if (state == 2 || state == 3 || state == 4) return true;
+                }
+            }
+            catch { }
+
+            // 2. Fallback: Fensterrechteck == Monitorrechteck.
             try
             {
                 IntPtr h = GetForegroundWindow();
@@ -133,6 +153,32 @@ namespace MFF
                 var screen = Screen.FromHandle(h);
                 var b = screen.Bounds;
                 return r.Left <= b.Left && r.Top <= b.Top && r.Right >= b.Right && r.Bottom >= b.Bottom;
+            }
+            catch { return false; }
+        }
+
+        // False, wenn das Fenster ein Tool-Fenster ist oder nicht aktiviert
+        // werden will (WS_EX_NOACTIVATE). Bei Fehler true (nicht faelschlich
+        // blockieren).
+        public static bool HasAcceptableExStyle(IntPtr h)
+        {
+            try
+            {
+                int ex = GetWindowLong(h, GWL_EXSTYLE);
+                if ((ex & WS_EX_TOOLWINDOW) != 0) return false;
+                if ((ex & WS_EX_NOACTIVATE) != 0) return false;
+                return true;
+            }
+            catch { return true; }
+        }
+
+        // Ist die Taste mit diesem virtuellen Code gerade gedrueckt?
+        public static bool IsKeyDown(int vk)
+        {
+            try
+            {
+                short mask = unchecked((short)0x8000);
+                return (GetAsyncKeyState(vk) & mask) != 0;
             }
             catch { return false; }
         }

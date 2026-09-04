@@ -29,21 +29,30 @@ Describe 'Test-ShouldSwitchWindow' {
 
 Describe 'Test-IsFocusableWindow' {
     It 'Desktop (WorkerW) -> false' {
-        Test-IsFocusableWindow 'WorkerW' 'explorer' $true @() | Should -BeFalse
+        Test-IsFocusableWindow 'WorkerW' 'explorer' $true $true @() | Should -BeFalse
     }
     It 'Taskleiste (Shell_TrayWnd) -> false' {
-        Test-IsFocusableWindow 'Shell_TrayWnd' 'explorer' $true @() | Should -BeFalse
+        Test-IsFocusableWindow 'Shell_TrayWnd' 'explorer' $true $true @() | Should -BeFalse
+    }
+    It 'Taskleiste 2. Monitor (Shell_SecondaryTrayWnd) -> false' {
+        Test-IsFocusableWindow 'Shell_SecondaryTrayWnd' 'explorer' $true $true @() | Should -BeFalse
+    }
+    It 'Task-Ansicht / Alt-Tab (XamlExplorerHostIslandWindow) -> false' {
+        Test-IsFocusableWindow 'XamlExplorerHostIslandWindow' 'explorer' $true $true @() | Should -BeFalse
+    }
+    It 'nicht aktivierbares / Tool-Fenster -> false' {
+        Test-IsFocusableWindow 'Chrome_WidgetWin_1' 'chrome' $true $false @() | Should -BeFalse
     }
     It 'unsichtbares Fenster -> false' {
-        Test-IsFocusableWindow 'Chrome_WidgetWin_1' 'chrome' $false @() | Should -BeFalse
+        Test-IsFocusableWindow 'Chrome_WidgetWin_1' 'chrome' $false $true @() | Should -BeFalse
     }
     It 'ausgeschlossener Prozess -> false' {
-        Test-IsFocusableWindow 'SomeClass' 'game' $true @('game') | Should -BeFalse
+        Test-IsFocusableWindow 'SomeClass' 'game' $true $true @('game') | Should -BeFalse
     }
     It 'ausgeschlossener Prozess mit .exe-Schreibweise -> false' {
-        Test-IsFocusableWindow 'SomeClass' 'game.exe' $true @('game') | Should -BeFalse
+        Test-IsFocusableWindow 'SomeClass' 'game.exe' $true $true @('game') | Should -BeFalse
     }
     It 'normales sichtbares Fenster -> true' {
-        Test-IsFocusableWindow 'Chrome_WidgetWin_1' 'chrome' $true @() | Should -BeTrue
+        Test-IsFocusableWindow 'Chrome_WidgetWin_1' 'chrome' $true $true @() | Should -BeTrue
     }
 }
