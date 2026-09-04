@@ -73,6 +73,27 @@ gilt der Standard):
 Nach einer Änderung das Programm neu starten (Task-Manager → beenden, dann
 über die Verknüpfung oder den `Start-Process`-Befehl neu starten).
 
+## Auf mehreren PCs / USB-Stick
+
+Verteilpaket bauen:
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Build-Release.ps1
+```
+Das erzeugt `dist/monitor-focus-follow-usb.zip`. Inhalt auf einen USB-Stick
+entpacken. Auf dem Stick liegen dann:
+
+| Datei | Funktion |
+|---|---|
+| `Setup.cmd` | **Installieren:** kopiert das Programm nach `%LOCALAPPDATA%\monitor-focus-follow`, richtet Autostart ein, startet sofort. Kein Admin nötig, Stick kann danach raus. |
+| `Start-Portabel.cmd` | **Ohne Installation:** startet direkt vom Stick. Läuft, solange der Stick steckt. |
+| `Deinstallieren.cmd` | entfernt Autostart + Programmordner vom PC, beendet die laufende Instanz. |
+| `LIESMICH.txt` | Kurzanleitung. |
+
+Eine vorhandene `config.psd1` auf dem Ziel-PC wird **nicht** überschrieben
+(die neue Vorlage kommt als `config.psd1.neu` daneben). Ein echtes
+„automatisch beim Einstecken" gibt es nicht – Windows blockiert AutoRun von
+USB-Sticks; ein Doppelklick auf `Setup.cmd` ist nötig.
+
 ## Zum Testen / Debuggen
 
 Im Vordergrund mit Log-Ausgaben starten:

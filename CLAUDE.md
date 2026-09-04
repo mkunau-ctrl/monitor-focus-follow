@@ -26,6 +26,8 @@ Windows/PowerShell, läuft versteckt per Autostart.
 | `config.psd1` | Einstellungen (Entprellung, Vollbild-/Maustaste-Pause, Ausschlussliste, Logdatei) |
 | `tests/FocusLogic.Tests.ps1` | Pester-Tests für `FocusLogic.psm1` |
 | `Install-Autostart.ps1` / `Uninstall-Autostart.ps1` | versteckte Autostart-Verknüpfung an/aus |
+| `Build-Release.ps1` | baut `dist/monitor-focus-follow-usb.zip` für die Verteilung |
+| `usb/` | Doppelklick-Skripte fürs Verteilpaket: `Setup.cmd` (installieren), `Start-Portabel.cmd` (vom Stick), `Deinstallieren.cmd`, `LIESMICH.txt` |
 | `README.md` | Anleitung für Endnutzer |
 
 ## Starten / Testen
@@ -42,6 +44,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\MonitorFocusFollow.ps1 -On
 
 # Autostart einrichten
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Install-Autostart.ps1
+
+# Verteilpaket bauen -> dist\monitor-focus-follow-usb.zip
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Build-Release.ps1
 ```
 
 Im Normalbetrieb läuft es versteckt; **Beenden nur über den Task-Manager**

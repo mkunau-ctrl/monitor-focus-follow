@@ -6,6 +6,45 @@ Wer das Projekt fortsetzt, soll hier verstehen können, *was*, *warum* und
 
 ---
 
+## 2026-09-04 – Verteilpaket für USB-Stick (v1.3)
+
+**Was:** Ein Weg, das Tool auf beliebige Windows-PCs zu bringen.
+`Build-Release.ps1` packt Programm + `src/` + Config + vier Doppelklick-
+Skripte in `dist/monitor-focus-follow-usb.zip`. Das ZIP wird auf einen
+USB-Stick entpackt. Auf dem Stick:
+- `Setup.cmd` (Variante A) – kopiert nach `%LOCALAPPDATA%\monitor-focus-follow`,
+  richtet Autostart ein, startet sofort. Kein Admin nötig. Stick kann raus.
+- `Start-Portabel.cmd` (Variante B) – startet direkt vom Stick, ohne
+  Installation. Läuft, solange der Stick steckt.
+- `Deinstallieren.cmd` – beendet Instanz, entfernt Autostart + Programmordner.
+- `LIESMICH.txt` – Anleitung.
+
+**Warum:** Nutzer möchte das Tool ohne Git/Entwicklungsumgebung auf mehrere
+Rechner bringen.
+
+**Entscheidungen:**
+- **Kein echtes AutoRun beim Einstecken** – Windows blockiert das seit
+  Windows 7 aus Sicherheitsgründen. Ein Doppelklick auf `Setup.cmd` ist das
+  Minimum. Dem Nutzer so erklärt.
+- Die `.cmd`-Dateien sind nur dünne Starter (`powershell -ExecutionPolicy
+  Bypass -File "%~dp0…"`), damit Doppelklick von jedem Laufwerksbuchstaben
+  funktioniert. Jedes Fenster endet mit `pause`.
+- **Vorhandene `config.psd1` auf dem Ziel-PC wird nicht überschrieben** – die
+  neue Vorlage landet als `config.psd1.neu` daneben.
+- Installationsziel `%LOCALAPPDATA%` (kein Admin, pro Benutzer).
+- `dist/` ist in `.gitignore` – das ZIP wird bei Bedarf neu gebaut, nicht
+  eingecheckt.
+
+**Stand danach:** `Build-Release.ps1` und die vier USB-Skripte umgesetzt.
+End-to-End getestet: ZIP bauen → entpacken → `Setup.ps1` (mit umgeleitetem
+`%LOCALAPPDATA%`) kopiert alles + legt Autostart an + startet; zweiter
+Setup-Lauf schützt die Config; `Deinstallieren.ps1` räumt sauber auf.
+
+**Offene Punkte:** GitHub-Release mit angehängtem ZIP (optional). Ideen 5
+(GitHub Actions) und 6 (Config-Hot-Reload) weiterhin offen.
+
+---
+
 ## 2026-09-04 – Verbesserungen 1–4 + 7 (v1.2)
 
 **Was:** Fünf kleine, unabhängige Verbesserungen an v1.1:

@@ -1,0 +1,57 @@
+monitor-focus-follow  -  Anleitung fuer den USB-Stick
+=====================================================
+
+Was das Programm macht
+----------------------
+Der Tastaturfokus folgt automatisch der Maus: sobald der Mauszeiger auf
+ein anderes Fenster wandert (anderer Monitor ODER Splitscreen daneben),
+geht die Tastatureingabe dorthin - ohne Klick.
+
+
+Was auf diesem Stick liegt
+--------------------------
+  Setup.cmd            Auf DIESEM PC installieren (empfohlen).
+                       Kopiert das Programm auf den PC, richtet Autostart
+                       ein, startet es sofort. Danach kann der Stick raus.
+
+  Start-Portabel.cmd   Nur vom Stick starten, OHNE Installation.
+                       Laeuft, solange der Stick steckt.
+
+  Deinstallieren.cmd   Programm + Autostart wieder vom PC entfernen.
+
+
+So geht's
+---------
+1. Stick in den PC stecken.
+2. Ordner auf dem Stick oeffnen.
+3. Doppelklick auf  Setup.cmd   (fuer die Installation)
+   oder auf         Start-Portabel.cmd   (nur zum Ausprobieren)
+4. Kurz warten, das Fenster zeigt "Fertig".
+
+Hinweis: Windows fragt evtl. "Ausfuehren?" - das ist normal bei .cmd vom
+USB-Stick. Bestaetigen.
+
+
+Bedienung
+---------
+  Kurz pausieren / wieder an:  Strg + Alt + Pause
+  Ganz beenden:                Task-Manager -> Reiter "Details" ->
+                               powershell.exe mit "MonitorFocusFollow.ps1"
+                               -> Task beenden
+  Einstellungen:               config.psd1  (im Programmordner)
+
+
+Voraussetzungen
+---------------
+Windows 10 oder 11. Sonst nichts - PowerShell ist vorinstalliert.
+
+
+Datenschutz
+-----------
+Laeuft komplett lokal. Keine Internetverbindung. Liest keine
+Tastatureingaben mit - reagiert nur auf die Mausposition.
+
+
+Projektseite / Quellcode
+------------------------
+https://github.com/mkunau-ctrl/monitor-focus-follow
