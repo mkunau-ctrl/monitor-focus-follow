@@ -220,6 +220,49 @@ Warnung ins Log.
 Der Native-Teil (`Native.cs`) wird nicht unit-getestet (dünne Wrapper),
 nur über die manuelle Checkliste.
 
+## Aenderung v1.1 (2026-09-04): Fokus folgt dem Fenster, nicht nur dem Monitor
+
+**Anlass:** Im Splitscreen auf einem Monitor (z. B. Browser links, WhatsApp
+rechts) und beim App-Wechsel im Splitscreen soll der Fokus ebenfalls der
+Maus folgen - nicht nur beim Monitorwechsel.
+
+**Aenderung:** Der Ausloeser ist nicht mehr "Monitor-Index geaendert",
+sondern **"oberstes Fenster (GA_ROOT) unter dem Mauszeiger geaendert"**.
+Das deckt Splitscreen und Monitorwechsel gemeinsam ab. Bewegung innerhalb
+desselben Fensters loest weiterhin nichts aus.
+
+**Neue Schutzregel:** Solange eine Maustaste gedrueckt ist (Markieren per
+Ziehen, Fenster verschieben), wird kein Fokuswechsel ausgeloest
+(`PauseWhileMouseDown`, Standard an).
+
+**Auswirkungen auf die Bausteine:**
+
+- `src/FocusLogic.psm1`: `Test-ShouldSwitch` (Monitor-basiert) und
+  `Get-MonitorIndexForPoint` entfallen. Neu:
+  `Test-ShouldSwitchWindow([long]$LastHwnd, [long]$CurrentHwnd,
+  [datetime]$ChangeStartedUtc, [datetime]$NowUtc, [int]$DebounceMs,
+  [bool]$MouseButtonDown) -> [bool]` - `$true` nur wenn keine Maustaste
+  gedrueckt, Handle gueltig (nicht 0), verschieden vom letzten und
+  Entprellzeit abgelaufen. `Test-IsFocusableWindow` unveraendert.
+- `src/Native.cs`: neu `static bool AnyMouseButtonDown()` (prueft
+  VK_LBUTTON/RBUTTON/MBUTTON via `GetAsyncKeyState`). `Screen.FromPoint`
+  wird nicht mehr gebraucht, `Screen.FromHandle` (in
+  `IsForegroundFullscreen`) bleibt.
+- `MonitorFocusFollow.ps1`: Schleife merkt sich `lastHwnd`/`pendingHwnd`
+  (als `[long]`) statt Monitor-Indizes. Nach der Entprellung wird
+  geprueft, ob der Zeiger noch ueber demselben Fenster steht, dann
+  Fullscreen-/Vordergrund-/Fokusfilter wie bisher.
+- `config.psd1`: neuer Schluessel `PauseWhileMouseDown = $true`.
+- Tests: `Test-ShouldSwitchWindow` (gleiches/anderes Fenster, Entprellung,
+  Maustaste gedrueckt -> kein Wechsel, Handle 0 -> kein Wechsel) und
+  `Test-IsFocusableWindow` wie bisher. Monitor-Index-Tests entfallen.
+
+**Nicht enthalten (eigenes, groesseres Thema):** Fokus auf einzelne
+Eingabefelder *innerhalb* einer Seite (z. B. zwei Suchfelder auf einer
+Webseite). Windows sieht dort nur ein Fensterhandle; das saubere Setzen
+des Feld-Fokus wuerde einen simulierten Klick an der Mausposition
+erfordern (Risiko: loest ungewollt Buttons/Links aus).
+
 ## Zukunftsidee: Multi-Seat (nicht v1)
 
 Ziel: zwei Mäuse + zwei Tastaturen, jede fest einem Monitor zugeordnet,

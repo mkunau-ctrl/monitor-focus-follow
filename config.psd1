@@ -20,6 +20,10 @@
     # (z. B. Spiel oder Vollbild-Video).
     PauseOnFullscreen = $true
 
+    # $true = kein Fokuswechsel, solange eine Maustaste gedrueckt ist
+    # (schuetzt Markieren per Ziehen und das Verschieben von Fenstern).
+    PauseWhileMouseDown = $true
+
     # Prozessnamen (ohne ".exe"), die nie den Fokus bekommen sollen.
     # Beispiel: @('vlc', 'mpc-hc')
     ExcludeProcesses  = @()

@@ -36,6 +36,7 @@ namespace MFF
         [DllImport("user32.dll")] private static extern bool SystemParametersInfo(uint action, uint param, IntPtr vparam, uint winini);
         [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
         [DllImport("kernel32.dll")] private static extern uint GetCurrentThreadId();
+        [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int vKey);
         [DllImport("user32.dll")] private static extern bool SetProcessDPIAware();
         [DllImport("user32.dll")] private static extern bool SetProcessDpiAwarenessContext(IntPtr value);
 
@@ -172,6 +173,27 @@ namespace MFF
                 }
             }
             catch { }
+        }
+
+        // True, solange eine der drei Haupt-Maustasten gedrueckt ist
+        // (linke/rechte/mittlere). Verhindert Fokuswechsel mitten im
+        // Markieren oder Ziehen. Beruecksichtigt Links-/Rechtshaender-
+        // Vertauschung ueber VK_LBUTTON/VK_RBUTTON nicht - beide werden
+        // sowieso geprueft.
+        public static bool AnyMouseButtonDown()
+        {
+            try
+            {
+                const int VK_LBUTTON = 0x01;
+                const int VK_RBUTTON = 0x02;
+                const int VK_MBUTTON = 0x04;
+                short mask = unchecked((short)0x8000);
+                if ((GetAsyncKeyState(VK_LBUTTON) & mask) != 0) return true;
+                if ((GetAsyncKeyState(VK_RBUTTON) & mask) != 0) return true;
+                if ((GetAsyncKeyState(VK_MBUTTON) & mask) != 0) return true;
+                return false;
+            }
+            catch { return false; }
         }
 
         // Prozess DPI-aware machen, damit Monitorkoordinaten bei Skalierung stimmen.

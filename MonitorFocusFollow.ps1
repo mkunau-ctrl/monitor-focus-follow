@@ -1,9 +1,10 @@
 <#
     MonitorFocusFollow.ps1
 
-    Setzt den Fokus beim Ueberqueren der Monitorgrenze auf das Fenster
-    direkt unter dem Mauszeiger. Bewegungen innerhalb eines Monitors
-    aendern nichts.
+    Setzt den Tastaturfokus auf das Fenster direkt unter dem Mauszeiger,
+    sobald sich dieses Fenster aendert - egal ob durch Monitorwechsel
+    oder durch ein anderes Fenster im Splitscreen daneben. Bewegungen
+    innerhalb desselben Fensters aendern nichts.
 
     Normalbetrieb: versteckt per Autostart (siehe Install-Autostart.ps1).
     Beenden: ueber den Task-Manager.
@@ -25,13 +26,14 @@ $ErrorActionPreference = 'Stop'
 # Konfiguration laden (mit Fallback auf eingebaute Standardwerte)
 # ---------------------------------------------------------------------------
 $defaults = @{
-    PollIntervalMs    = 100
-    DebounceMs        = 120
-    RaiseWindow       = $false
-    PauseOnFullscreen = $true
-    ExcludeProcesses  = @()
-    LogToFile         = $false
-    LogPath           = 'focus.log'
+    PollIntervalMs      = 100
+    DebounceMs          = 120
+    RaiseWindow         = $false
+    PauseOnFullscreen   = $true
+    PauseWhileMouseDown = $true
+    ExcludeProcesses    = @()
+    LogToFile           = $false
+    LogPath             = 'focus.log'
 }
 
 $cfg = $defaults.Clone()
@@ -95,68 +97,70 @@ catch {
 }
 
 Import-Module "$PSScriptRoot\src\FocusLogic.psm1" -Force
-Add-Type -AssemblyName System.Windows.Forms
 
 [MFF.Native]::MakeDpiAware()
 
 # ---------------------------------------------------------------------------
-# Monitor-Rechtecke aus dem aktuellen Bildschirmzustand
+# Hilfsfunktion: Wurzelfenster-Handle unter einem Punkt als [long] (0 = keins)
 # ---------------------------------------------------------------------------
-function Get-MonitorRects {
-    [System.Windows.Forms.Screen]::AllScreens | ForEach-Object {
-        [pscustomobject]@{
-            Left   = $_.Bounds.Left
-            Top    = $_.Bounds.Top
-            Right  = $_.Bounds.Right
-            Bottom = $_.Bounds.Bottom
-        }
-    }
+function Get-RootWindowLongAt {
+    param([int]$X, [int]$Y)
+    $h = [MFF.Native]::GetRootWindowAt($X, $Y)
+    if ($h -eq [IntPtr]::Zero) { return [long]0 }
+    return $h.ToInt64()
 }
 
 # ---------------------------------------------------------------------------
 # Hauptschleife
 # ---------------------------------------------------------------------------
-$lastIndex       = -1
-$pendingIndex    = -1
+$lastHwnd         = [long]0
+$pendingHwnd      = [long]0
 $changeStartedUtc = [datetime]::UtcNow
 
-Write-FocusLog "gestartet (PollIntervalMs=$($cfg.PollIntervalMs), DebounceMs=$($cfg.DebounceMs), RaiseWindow=$($cfg.RaiseWindow), PauseOnFullscreen=$($cfg.PauseOnFullscreen))"
+Write-FocusLog ("gestartet (PollIntervalMs={0}, DebounceMs={1}, RaiseWindow={2}, PauseOnFullscreen={3}, PauseWhileMouseDown={4})" -f `
+    $cfg.PollIntervalMs, $cfg.DebounceMs, $cfg.RaiseWindow, $cfg.PauseOnFullscreen, $cfg.PauseWhileMouseDown)
 
 try {
     while ($true) {
         try {
-            $mons = Get-MonitorRects
             $p = [MFF.Native]::GetCursorPos()
-            $idx = Get-MonitorIndexForPoint $p[0] $p[1] $mons
+            $hwnd = Get-RootWindowLongAt $p[0] $p[1]
 
-            if ($idx -ge 0 -and $idx -ne $lastIndex -and $idx -ne $pendingIndex) {
-                $pendingIndex = $idx
+            # Neues Fenster unter der Maus? -> als Kandidat merken.
+            if ($hwnd -ne 0 -and $hwnd -ne $lastHwnd -and $hwnd -ne $pendingHwnd) {
+                $pendingHwnd = $hwnd
                 $changeStartedUtc = [datetime]::UtcNow
             }
 
-            if ($pendingIndex -ge 0 -and
-                (Test-ShouldSwitch $lastIndex $pendingIndex $changeStartedUtc ([datetime]::UtcNow) $cfg.DebounceMs)) {
+            if ($pendingHwnd -ne 0) {
+                $mouseDown = [bool]$cfg.PauseWhileMouseDown -and [MFF.Native]::AnyMouseButtonDown()
 
-                $p2 = [MFF.Native]::GetCursorPos()
-                $nowIdx = Get-MonitorIndexForPoint $p2[0] $p2[1] $mons
+                if (Test-ShouldSwitchWindow $lastHwnd $pendingHwnd $changeStartedUtc ([datetime]::UtcNow) $cfg.DebounceMs $mouseDown) {
 
-                if ($nowIdx -eq $pendingIndex) {
-                    $blockedByFullscreen = $cfg.PauseOnFullscreen -and [MFF.Native]::IsForegroundFullscreen()
-                    if (-not $blockedByFullscreen) {
-                        $h = [MFF.Native]::GetRootWindowAt($p2[0], $p2[1])
-                        if ($h -ne [IntPtr]::Zero -and $h -ne [MFF.Native]::GetForeground()) {
-                            $cls  = [MFF.Native]::GetClassNameOf($h)
-                            $proc = [MFF.Native]::GetProcessNameOf($h)
-                            $vis  = [MFF.Native]::IsVisibleTopLevel($h)
+                    # Zeiger noch ueber demselben Kandidaten?
+                    $p2 = [MFF.Native]::GetCursorPos()
+                    $hwnd2 = Get-RootWindowLongAt $p2[0] $p2[1]
+
+                    if ($hwnd2 -eq $pendingHwnd) {
+                        $h2ptr = [MFF.Native]::GetRootWindowAt($p2[0], $p2[1])
+                        $blockedByFullscreen = [bool]$cfg.PauseOnFullscreen -and [MFF.Native]::IsForegroundFullscreen()
+                        $alreadyForeground   = ($h2ptr -eq [MFF.Native]::GetForeground())
+
+                        if (-not $blockedByFullscreen -and -not $alreadyForeground) {
+                            $cls  = [MFF.Native]::GetClassNameOf($h2ptr)
+                            $proc = [MFF.Native]::GetProcessNameOf($h2ptr)
+                            $vis  = [MFF.Native]::IsVisibleTopLevel($h2ptr)
                             if (Test-IsFocusableWindow $cls $proc $vis $cfg.ExcludeProcesses) {
-                                [MFF.Native]::SetForegroundForced($h, [bool]$cfg.RaiseWindow)
-                                Write-FocusLog ("Fokus -> Monitor {0}, Prozess {1}" -f $pendingIndex, $proc)
+                                [MFF.Native]::SetForegroundForced($h2ptr, [bool]$cfg.RaiseWindow)
+                                Write-FocusLog ("Fokus -> Prozess {0}" -f $proc)
                             }
                         }
+                        # In jedem Fall gilt der Kandidat als abgehandelt,
+                        # damit wir ihn nicht in jeder Runde neu pruefen.
+                        $lastHwnd = $pendingHwnd
                     }
-                    $lastIndex = $pendingIndex
+                    $pendingHwnd = 0
                 }
-                $pendingIndex = -1
             }
         }
         catch {

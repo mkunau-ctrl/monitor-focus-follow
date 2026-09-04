@@ -7,45 +7,23 @@ BeforeAll {
     Import-Module "$PSScriptRoot/../src/FocusLogic.psm1" -Force
 }
 
-Describe 'Get-MonitorIndexForPoint' {
-    BeforeAll {
-        $script:mons = @(
-            [pscustomobject]@{ Left = 0;     Top = 0; Right = 1920; Bottom = 1080 }
-            [pscustomobject]@{ Left = -1920; Top = 0; Right = 0;    Bottom = 1080 }
-        )
-    }
-
-    It 'findet den Hauptmonitor' {
-        Get-MonitorIndexForPoint 100 100 $script:mons | Should -Be 0
-    }
-    It 'findet den linken Monitor bei negativem X' {
-        Get-MonitorIndexForPoint -50 100 $script:mons | Should -Be 1
-    }
-    It 'linke/obere Kante gehoert zum Monitor' {
-        Get-MonitorIndexForPoint 0 0 $script:mons | Should -Be 0
-    }
-    It 'rechte Kante ist exklusiv' {
-        Get-MonitorIndexForPoint 1920 100 $script:mons | Should -Be -1
-    }
-    It 'Punkt ausserhalb aller Monitore -> -1' {
-        Get-MonitorIndexForPoint 5000 5000 $script:mons | Should -Be -1
-    }
-}
-
-Describe 'Test-ShouldSwitch' {
+Describe 'Test-ShouldSwitchWindow' {
     BeforeAll { $script:t0 = [datetime]::UtcNow }
 
-    It 'gleicher Index -> false' {
-        Test-ShouldSwitch 0 0 $script:t0 $script:t0.AddMilliseconds(500) 120 | Should -BeFalse
+    It 'gleiches Fenster -> false' {
+        Test-ShouldSwitchWindow 100 100 $script:t0 $script:t0.AddMilliseconds(500) 120 $false | Should -BeFalse
     }
     It 'Entprellung noch nicht abgelaufen -> false' {
-        Test-ShouldSwitch 0 1 $script:t0 $script:t0.AddMilliseconds(50) 120 | Should -BeFalse
+        Test-ShouldSwitchWindow 100 200 $script:t0 $script:t0.AddMilliseconds(50) 120 $false | Should -BeFalse
     }
-    It 'Entprellung abgelaufen -> true' {
-        Test-ShouldSwitch 0 1 $script:t0 $script:t0.AddMilliseconds(200) 120 | Should -BeTrue
+    It 'anderes Fenster, Entprellung abgelaufen -> true' {
+        Test-ShouldSwitchWindow 100 200 $script:t0 $script:t0.AddMilliseconds(200) 120 $false | Should -BeTrue
     }
-    It 'ungueltiger aktueller Index -> false' {
-        Test-ShouldSwitch 0 -1 $script:t0 $script:t0.AddMilliseconds(200) 120 | Should -BeFalse
+    It 'Maustaste gedrueckt -> false (kein Wechsel beim Ziehen/Markieren)' {
+        Test-ShouldSwitchWindow 100 200 $script:t0 $script:t0.AddMilliseconds(500) 120 $true | Should -BeFalse
+    }
+    It 'ungueltiges Handle (0) -> false' {
+        Test-ShouldSwitchWindow 100 0 $script:t0 $script:t0.AddMilliseconds(500) 120 $false | Should -BeFalse
     }
 }
 

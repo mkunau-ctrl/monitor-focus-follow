@@ -1,8 +1,11 @@
 # monitor-focus-follow
 
-Setzt bei zwei Monitoren den Tastaturfokus automatisch auf das Fenster unter
-dem Mauszeiger, **sobald die Maus die Monitorgrenze überquert** – ohne dass
-man erst klicken muss. Bewegungen innerhalb eines Monitors ändern nichts.
+Setzt den Tastaturfokus automatisch auf das Fenster unter dem Mauszeiger,
+**sobald sich dieses Fenster ändert** – egal ob durch Monitorwechsel oder
+durch ein anderes Fenster im Splitscreen daneben (z. B. Browser links,
+WhatsApp rechts). Kein Klick nötig. Bewegungen innerhalb desselben Fensters
+ändern nichts. Solange eine Maustaste gedrückt ist (Markieren, Ziehen),
+bleibt der Fokus stehen.
 
 ## Voraussetzungen
 
@@ -54,9 +57,10 @@ gilt der Standard):
 | Schlüssel | Standard | Zweck |
 |---|---|---|
 | `PollIntervalMs` | `100` | Abfragetakt der Schleife in Millisekunden |
-| `DebounceMs` | `120` | Wartezeit nach Grenzübertritt, bevor der Fokus gesetzt wird |
+| `DebounceMs` | `120` | Wartezeit über dem neuen Fenster, bevor der Fokus gesetzt wird |
 | `RaiseWindow` | `$false` | Fenster zusätzlich in der Z-Reihenfolge nach vorne holen |
 | `PauseOnFullscreen` | `$true` | kein Fokuswechsel, solange vorne eine Vollbild-App läuft |
+| `PauseWhileMouseDown` | `$true` | kein Fokuswechsel, solange eine Maustaste gedrückt ist |
 | `ExcludeProcesses` | `@()` | Prozessnamen (ohne `.exe`), die nie fokussiert werden |
 | `LogToFile` | `$false` | Ereignisse zusätzlich in eine Datei schreiben |
 | `LogPath` | `focus.log` | Pfad der Logdatei (relativ zum Projektordner) |
@@ -82,9 +86,9 @@ Beenden im Konsolenbetrieb mit `Strg`+`C`.
 Invoke-Pester .\tests\FocusLogic.Tests.ps1
 ```
 Getestet wird die reine Entscheidungslogik in `src/FocusLogic.psm1`
-(Monitorzuordnung inkl. negativer Koordinaten, Entprellung, Fensterfilter).
-Der Windows-API-Teil (`src/Native.cs`) wird über die manuelle Checkliste
-unten geprüft.
+(Fensterwechsel-Erkennung, Entprellung, „Maustaste gedrückt → kein
+Wechsel", Fensterfilter). Der Windows-API-Teil (`src/Native.cs`) wird über
+die manuelle Checkliste unten geprüft.
 
 ## Datenschutz
 
@@ -99,18 +103,28 @@ unten geprüft.
 
 ## Manuelle Testcheckliste
 
-1. Maus langsam über die Monitorgrenze bewegen → Fenster auf dem Zielmonitor
+1. Maus über die Monitorgrenze bewegen → Fenster auf dem anderen Monitor
    wird aktiv, ohne Klick.
-2. Maus innerhalb eines Monitors zwischen Fenstern bewegen → Fokus bleibt.
-3. Vollbild-Spiel/-Video auf einem Monitor, Maus kurz rüber und zurück →
-   kein Fokuswechsel (bei `PauseOnFullscreen = $true`).
-4. `Strg`+`C` im Konsolenbetrieb → Ausgabe „beendet".
-5. Nach `Install-Autostart.ps1` und Neuanmeldung → Programm läuft, im
+2. Splitscreen auf einem Monitor (z. B. Browser + WhatsApp): Maus vom einen
+   zum anderen Fenster bewegen, nicht klicken → Tippen landet im Fenster
+   unter der Maus.
+3. Maus innerhalb desselben Fensters bewegen → Fokus bleibt.
+4. In einem Fenster Text mit gedrückter Maustaste über die Fensterkante
+   hinaus markieren → Fokus springt nicht weg.
+5. Vollbild-Spiel/-Video, Maus kurz rüber und zurück → kein Fokuswechsel
+   (bei `PauseOnFullscreen = $true`).
+6. `Strg`+`C` im Konsolenbetrieb → Ausgabe „beendet".
+7. Nach `Install-Autostart.ps1` und Neuanmeldung → Programm läuft, im
    Task-Manager beendbar.
 
-## Zukunftsidee (nicht in Version 1)
+## Zukunftsideen (nicht enthalten)
 
-Zwei Mäuse + zwei Tastaturen, jede fest einem Monitor zugeordnet
-(Multi-Seat). Auf Windows mit Bordmitteln nicht möglich (nur ein
-Systemcursor) – das wäre ein eigenes, größeres Projekt. Details in
-`docs/superpowers/specs/2026-09-03-monitor-focus-follow-design.md`.
+- **Fokus auf einzelne Eingabefelder innerhalb einer Seite** (z. B. zwei
+  Suchfelder auf einer Webseite). Windows sieht dort nur ein Fenster;
+  sauber wäre nur ein simulierter Klick an der Mausposition – riskant,
+  weil das ungewollt Buttons/Links auslösen kann.
+- **Zwei Mäuse + zwei Tastaturen**, jede fest einem Monitor zugeordnet
+  (Multi-Seat). Auf Windows mit Bordmitteln nicht möglich (nur ein
+  Systemcursor) – ein eigenes, größeres Projekt.
+
+Details in `docs/superpowers/specs/2026-09-03-monitor-focus-follow-design.md`.
