@@ -40,6 +40,16 @@ End-to-End getestet: ZIP bauen → entpacken → `Setup.ps1` (mit umgeleitetem
 `%LOCALAPPDATA%`) kopiert alles + legt Autostart an + startet; zweiter
 Setup-Lauf schützt die Config; `Deinstallieren.ps1` räumt sauber auf.
 
+**Nachtrag (gleicher Tag):** Der Ordner im Paket heißt jetzt
+`!monitor-focus-follow` – das führende `!` sorgt dafür, dass er im
+Datei-Explorer **ganz oben** einsortiert wird (der Nutzer hatte den Ordner
+zwischen ~150 anderen Dateien auf dem Stick nicht gefunden). Zusätzlich
+legt `Build-Release.ps1` eine Wegweiser-Datei
+`!!! monitor-focus-follow - HIER LESEN.txt` neben den Ordner (landet beim
+Entpacken im Stammverzeichnis des Sticks). Auf dem Stick des Nutzers wurde
+der Ordner außerdem an den Windows-Schnellzugriff angepinnt (gilt nur für
+diesen PC).
+
 **Offene Punkte:** GitHub-Release mit angehängtem ZIP (optional). Ideen 5
 (GitHub Actions) und 6 (Config-Hot-Reload) weiterhin offen.
 
