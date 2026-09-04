@@ -6,6 +6,45 @@ Wer das Projekt fortsetzt, soll hier verstehen können, *was*, *warum* und
 
 ---
 
+## Aktueller Stand (2026-09-04)
+
+**Funktioniert und im Einsatz.** Der Tastaturfokus folgt der Maus – beim
+Monitorwechsel und im Splitscreen –, ohne Fokusklau beim Markieren/Ziehen.
+Läuft auf dem Rechner des Nutzers als versteckter Autostart.
+
+- **Version im Repo:** v1.3 (USB-Verteilpaket). Laufzeitverhalten = v1.2
+  (Single-Instance, erweiterte Filter, crash.log, Pause-Hotkey Strg+Alt+Pause,
+  bessere Vollbild-Erkennung).
+- **Tests:** 14 Pester-Tests grün (`Invoke-Pester .\tests\FocusLogic.Tests.ps1`).
+- **GitHub:** `https://github.com/mkunau-ctrl/monitor-focus-follow` (öffentlich,
+  Branch `main`).
+- **USB-Stick des Nutzers:** Ordner `!monitor-focus-follow` entpackt,
+  an den Schnellzugriff angepinnt, Wegweiser-Datei im Stammverzeichnis.
+- **Dateiübersicht:** siehe `docs/DATEIEN.md`.
+
+### Offene Punkte
+
+- **Push:** Commits ab `b41fae3` (v1.2, v1.3, Doku) waren beim letzten
+  Sitzungsende noch nicht auf GitHub – prüfen mit
+  `git log origin/main..HEAD` und ggf. `git push`.
+  *(Push durch Claude wird vom Auto-Classifier blockiert; der Nutzer pusht
+  selbst mit `!git push`.)*
+- **Idee 5:** GitHub Actions, die die Pester-Tests bei jedem Push laufen lassen.
+- **Idee 6:** `config.psd1` ohne Neustart neu einlesen.
+- **Optional:** GitHub-Release mit angehängtem `monitor-focus-follow-usb.zip`.
+- **Pause-Hotkey** live vom Nutzer noch nicht ausdrücklich bestätigt
+  (Logik getestet, echter Tastendruck nur manuell prüfbar).
+
+### Zukunftsideen (bewusst nicht umgesetzt)
+
+- **Fokus auf einzelne Eingabefelder innerhalb einer Seite** – ginge nur mit
+  simuliertem Klick, zu riskant. Details im v1.1-Eintrag.
+- **Multi-Seat** (2 Mäuse + 2 Tastaturen, je ein Monitor) – auf Windows nicht
+  mit Bordmitteln möglich, eigenes Projekt. Details im v1-Eintrag und in der
+  Spec.
+
+---
+
 ## 2026-09-04 – Verteilpaket für USB-Stick (v1.3)
 
 **Was:** Ein Weg, das Tool auf beliebige Windows-PCs zu bringen.

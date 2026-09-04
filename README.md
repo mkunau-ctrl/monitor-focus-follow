@@ -31,6 +31,9 @@ bleibt der Fokus stehen.
 Das Programm läuft danach unsichtbar im Hintergrund (kein Fenster, kein
 Symbol).
 
+> **Für Entwickler / zum Weiterarbeiten:** `docs/DATEIEN.md` erklärt jede
+> Datei, `docs/PROJEKT-LOG.md` den Verlauf und aktuellen Stand.
+
 ## Beenden
 
 **Kurz pausieren statt beenden:** `Strg`+`Alt`+`Pause` schaltet das
@@ -80,7 +83,9 @@ Verteilpaket bauen:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Build-Release.ps1
 ```
 Das erzeugt `dist/monitor-focus-follow-usb.zip`. Inhalt auf einen USB-Stick
-entpacken. Auf dem Stick liegen dann:
+entpacken – es entsteht der Ordner **`!monitor-focus-follow`** (führendes
+`!`, damit er im Explorer ganz oben steht) plus eine Wegweiser-Textdatei im
+Stammverzeichnis. Im Ordner:
 
 | Datei | Funktion |
 |---|---|
@@ -125,9 +130,9 @@ die manuelle Checkliste unten geprüft.
   sind – nichts davon wird gespeichert.
 - Standardmäßig wird **keine Logdatei** geschrieben. Die Konsolenausgabe gibt
   es nur beim manuellen Start mit `-Log`.
-- Wenn `LogToFile = $true` gesetzt ist, enthält die Datei nur Zeitstempel,
-  Monitor-Index und den Prozessnamen des fokussierten Fensters – **niemals
-  Fenstertitel, Fensterinhalte oder Eingaben.**
+- Wenn `LogToFile = $true` gesetzt ist, enthält die Datei nur Zeitstempel
+  und den Prozessnamen des fokussierten Fensters – **niemals Fenstertitel,
+  Fensterinhalte oder Eingaben.**
 
 ## Manuelle Testcheckliste
 

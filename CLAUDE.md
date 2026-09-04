@@ -9,12 +9,12 @@ Windows/PowerShell, läuft versteckt per Autostart.
 
 ## Wo weiterlesen (statt Code lesen)
 
-- **`docs/PROJEKT-LOG.md`** – chronologischer Verlauf: was wann warum gebaut
-  wurde, welche Entscheidungen getroffen wurden, aktueller Stand, offene
-  Punkte. **Zuerst hier lesen.**
+- **`docs/PROJEKT-LOG.md`** – chronologischer Verlauf + Abschnitt „Aktueller
+  Stand" ganz oben (Version, was läuft, offene Punkte). **Zuerst hier lesen.**
+- `docs/DATEIEN.md` – welche Datei für was zuständig ist.
 - `docs/superpowers/specs/2026-09-03-monitor-focus-follow-design.md` – das
-  Design im Detail (inkl. Änderung v1.1).
-- `docs/superpowers/plans/` – die Umsetzungspläne.
+  Design im Detail (inkl. Änderungen v1.1 / v1.2).
+- `docs/superpowers/plans/` – die Umsetzungspläne pro Version.
 
 ## Aufbau
 
