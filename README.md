@@ -22,14 +22,15 @@ bleibt der Fokus stehen.
    ```
    powershell -NoProfile -ExecutionPolicy Bypass -File .\Install-Autostart.ps1
    ```
-3. Entweder neu anmelden – oder sofort starten mit dem Befehl, den das
-   Installationsskript ausgibt:
-   ```
-   Start-Process powershell.exe -WindowStyle Hidden -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File "<Pfad>\MonitorFocusFollow.ps1"'
-   ```
+   Das richtet eine **geplante Aufgabe** (`MonitorFocusFollow`, Auslöser „bei
+   Anmeldung", 15 s Verzögerung) ein und startet das Programm sofort mit.
+   Kein Administrator und kein gespeichertes Passwort nötig. Eine ältere
+   Autostart-Verknüpfung wird dabei automatisch entfernt.
 
 Das Programm läuft danach unsichtbar im Hintergrund (kein Fenster, kein
-Symbol).
+Symbol) und kommt bei jeder Anmeldung von selbst mit. Eine geplante Aufgabe
+lässt sich – anders als ein Autostart-Ordner-Eintrag – von „Aufräum-"-Tools
+nicht per Häkchen abschalten.
 
 > **Für Entwickler / zum Weiterarbeiten:** `docs/DATEIEN.md` erklärt jede
 > Datei, `docs/PROJEKT-LOG.md` den Verlauf und aktuellen Stand.
@@ -49,7 +50,7 @@ So beendest du es ganz:
    `MonitorFocusFollow.ps1` enthält.
 5. Rechtsklick → **Task beenden**.
 
-Autostart dauerhaft entfernen:
+Autostart dauerhaft entfernen (löscht die geplante Aufgabe):
 ```
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Uninstall-Autostart.ps1
 ```
@@ -73,8 +74,9 @@ gilt der Standard):
 | `LogToFile` | `$false` | Ereignisse zusätzlich in eine Datei schreiben |
 | `LogPath` | `focus.log` | Pfad der Logdatei (relativ zum Projektordner) |
 
-Nach einer Änderung das Programm neu starten (Task-Manager → beenden, dann
-über die Verknüpfung oder den `Start-Process`-Befehl neu starten).
+Nach einer Änderung das Programm neu starten: Task-Manager → beenden, dann
+`Start-ScheduledTask -TaskName MonitorFocusFollow` (oder erneut
+`Install-Autostart.ps1` ausführen).
 
 ## Auf mehreren PCs / USB-Stick
 

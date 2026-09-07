@@ -36,6 +36,8 @@ namespace MFF
         [DllImport("user32.dll")] private static extern bool SystemParametersInfo(uint action, uint param, IntPtr vparam, uint winini);
         [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
         [DllImport("kernel32.dll")] private static extern uint GetCurrentThreadId();
+        [DllImport("kernel32.dll")] private static extern IntPtr GetConsoleWindow();
+        [DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr hwnd, int cmdShow);
         [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int vKey);
         [DllImport("user32.dll")] private static extern bool SetProcessDPIAware();
         [DllImport("user32.dll")] private static extern bool SetProcessDpiAwarenessContext(IntPtr value);
@@ -53,6 +55,7 @@ namespace MFF
         private const uint SWP_NOSIZE = 0x0001;
         private const uint SWP_NOACTIVATE = 0x0010;
         private static readonly IntPtr DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = new IntPtr(-4);
+        private const int SW_HIDE = 0;
 
         // ----- Oeffentliche API -----
 
@@ -240,6 +243,20 @@ namespace MFF
                 return false;
             }
             catch { return false; }
+        }
+
+        // Das eigene Konsolenfenster verstecken. Beim versteckten Autostart
+        // sorgt schon "powershell -WindowStyle Hidden" dafuer, dass nichts
+        // sichtbar wird; dieser Aufruf ist die Absicherung fuer den Fall, dass
+        // doch kurz ein Fenster auftaucht (z. B. bei manuellem Start).
+        public static void HideConsoleWindow()
+        {
+            try
+            {
+                IntPtr h = GetConsoleWindow();
+                if (h != IntPtr.Zero) ShowWindow(h, SW_HIDE);
+            }
+            catch { }
         }
 
         // Prozess DPI-aware machen, damit Monitorkoordinaten bei Skalierung stimmen.

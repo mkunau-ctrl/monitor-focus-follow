@@ -6,15 +6,17 @@ Wer das Projekt fortsetzt, soll hier verstehen können, *was*, *warum* und
 
 ---
 
-## Aktueller Stand (2026-09-04)
+## Aktueller Stand (2026-09-08)
 
 **Funktioniert und im Einsatz.** Der Tastaturfokus folgt der Maus – beim
 Monitorwechsel und im Splitscreen –, ohne Fokusklau beim Markieren/Ziehen.
-Läuft auf dem Rechner des Nutzers als versteckter Autostart.
+Läuft auf dem Rechner des Nutzers versteckt, gestartet über eine **geplante
+Aufgabe** (`MonitorFocusFollow`, Auslöser „bei Anmeldung", 15 s Verzögerung).
 
 - **Version im Repo:** v1.3 (USB-Verteilpaket). Laufzeitverhalten = v1.2
   (Single-Instance, erweiterte Filter, crash.log, Pause-Hotkey Strg+Alt+Pause,
-  bessere Vollbild-Erkennung).
+  bessere Vollbild-Erkennung) + v1.4-Autostart (geplante Aufgabe statt
+  Autostart-Ordner, Konsolenfenster wird sofort versteckt).
 - **Tests:** 14 Pester-Tests grün (`Invoke-Pester .\tests\FocusLogic.Tests.ps1`).
 - **GitHub:** `https://github.com/mkunau-ctrl/monitor-focus-follow` (öffentlich,
   Branch `main`).
@@ -42,6 +44,54 @@ Läuft auf dem Rechner des Nutzers als versteckter Autostart.
 - **Multi-Seat** (2 Mäuse + 2 Tastaturen, je ein Monitor) – auf Windows nicht
   mit Bordmitteln möglich, eigenes Projekt. Details im v1-Eintrag und in der
   Spec.
+
+---
+
+## 2026-09-08 – Autostart als geplante Aufgabe (v1.4)
+
+**Was:** Der Autostart läuft nicht mehr über eine Verknüpfung im
+Windows-Autostart-Ordner, sondern über eine **geplante Aufgabe** namens
+`MonitorFocusFollow` (Auslöser „bei Anmeldung", 15 Sekunden Verzögerung,
+versteckt, kein Zeitlimit, Neustart bis zu 3× nach einem Absturz, läuft auch
+im Akkubetrieb weiter). `Install-Autostart.ps1` legt diese Aufgabe an,
+entfernt dabei die alte `.lnk` samt übrig gebliebenem Registry-Eintrag und
+startet das Programm sofort mit. `Uninstall-Autostart.ps1` und
+`usb/Deinstallieren.ps1` entfernen die Aufgabe wieder.
+
+Zusätzlich: neue Methode `HideConsoleWindow()` in `src/Native.cs`, die das
+Hauptskript im Normalbetrieb (nicht bei `-Log`) direkt nach dem Kompilieren
+aufruft – gegen ein kurzes Aufblitzen eines Fensters.
+
+**Warum:** Das Tool lief plötzlich nicht mehr. Ursache: der
+Autostart-Ordner-Eintrag war in Windows deaktiviert worden (Registry
+`StartupApproved\StartupFolder`, erstes Byte `3` statt `2`, Zeitstempel
+05.09.2026 01:28) – sehr wahrscheinlich durch eins der „Aufräum-"/Optimizer-
+Programme auf dem PC (Lavasoft Web Companion, Avast Browser, Opera GX).
+Solche Tools können Autostart-Ordner-Einträge per Häkchen abschalten, eine
+geplante Aufgabe nicht.
+
+**Entscheidungen:**
+- **Geplante Aufgabe statt `Run`-Registry-Schlüssel:** die Aufgabe kann eine
+  Startverzögerung und automatischen Neustart, ein `Run`-Eintrag nicht.
+- **„Nur wenn Benutzer angemeldet ist", RunLevel `Limited`:** so wird **kein
+  Administrator** und **kein gespeichertes Passwort** gebraucht. Das Tool
+  braucht ohnehin die interaktive Sitzung (Maus/Fenster).
+- **15 s Verzögerung:** das Tool drängelt sich nicht in den Anmelde-Ansturm.
+- **Alte `.lnk` wird beim Einrichten gelöscht**, damit es nicht zwei
+  Autostarts gibt.
+- **Bewusst nicht gemacht:** die Aufgabe als „unabhängig von der Anmeldung"
+  laufen zu lassen (bräuchte Passwort/Admin) und den Startvorgang per
+  VBScript/`conhost --headless` komplett flackerfrei zu machen (unnötig, mit
+  `-WindowStyle Hidden` + `HideConsoleWindow()` sieht man praktisch nichts).
+
+**Stand danach:** Aufgabe ist eingerichtet und läuft (`Get-ScheduledTask
+MonitorFocusFollow` → *Running*), Prozess bestätigt aktiv, alte `.lnk` und
+Registry-Eintrag entfernt, 14 Pester-Tests grün, `Native.cs` kompiliert
+sauber. Beim nächsten Login startet es automatisch mit.
+
+**Offene Punkte / Nächste Schritte:**
+- Nach dem nächsten echten Neustart einmal prüfen, dass es ohne Zutun kommt.
+- Commit auf GitHub pushen (Nutzer, mit `!git push`).
 
 ---
 

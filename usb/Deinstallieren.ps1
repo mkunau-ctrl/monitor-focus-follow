@@ -3,7 +3,7 @@
 
     Entfernt monitor-focus-follow von diesem PC:
       - beendet eine laufende Instanz,
-      - loescht die Autostart-Verknuepfung,
+      - loescht die geplante Autostart-Aufgabe (und eine evtl. alte Verknuepfung),
       - loescht den Programmordner %LOCALAPPDATA%\monitor-focus-follow.
 
     Betrifft nur die installierte Variante (Setup.cmd). Eine portabel vom
@@ -32,12 +32,17 @@ else {
     Write-Host "keine laufende Instanz gefunden"
 }
 
-# 2. Autostart-Verknuepfung entfernen.
+# 2. Autostart entfernen: geplante Aufgabe + alte Verknuepfung.
+$task = Get-ScheduledTask -TaskName 'MonitorFocusFollow' -ErrorAction SilentlyContinue
+if ($task) {
+    Unregister-ScheduledTask -TaskName 'MonitorFocusFollow' -Confirm:$false
+    Write-Host "geplante Aufgabe entfernt"
+}
 if (Test-Path -LiteralPath $lnk) {
     Remove-Item -LiteralPath $lnk -Force
-    Write-Host "Autostart entfernt"
+    Write-Host "alte Autostart-Verknuepfung entfernt"
 }
-else {
+if (-not $task -and -not (Test-Path -LiteralPath $lnk)) {
     Write-Host "kein Autostart-Eintrag vorhanden"
 }
 

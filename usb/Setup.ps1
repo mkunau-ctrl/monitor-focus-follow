@@ -58,12 +58,10 @@ else {
 }
 
 Write-Host ""
-Write-Host "Autostart einrichten..."
+Write-Host "Autostart einrichten und Programm starten..."
+# Install-Autostart.ps1 legt die geplante Aufgabe an, raeumt alte
+# Autostart-Eintraege weg und startet das Programm sofort.
 & (Join-Path $target 'Install-Autostart.ps1') | Out-Null
-
-Write-Host "Programm starten..."
-Start-Process powershell.exe -WindowStyle Hidden -ArgumentList `
-    "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$(Join-Path $target 'MonitorFocusFollow.ps1')`""
 
 Write-Host ""
 Write-Host "Fertig. Das Programm laeuft jetzt und startet ab sofort bei jeder Anmeldung."

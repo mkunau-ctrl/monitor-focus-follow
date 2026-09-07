@@ -289,6 +289,28 @@ Siehe `docs/superpowers/plans/2026-09-04-verbesserungen-v1.2.md` und
    zusaetzlich `SHQueryUserNotificationState` ab (QUNS_BUSY /
    QUNS_RUNNING_D3D_FULL_SCREEN / QUNS_PRESENTATION_MODE).
 
+## Aenderung v1.4 (2026-09-08): Autostart als geplante Aufgabe
+
+Siehe `docs/PROJEKT-LOG.md` (Eintrag 2026-09-08). Kurz:
+
+1. **`Install-Autostart.ps1`** legt statt einer `.lnk` in `shell:startup` eine
+   geplante Aufgabe `MonitorFocusFollow` an: Ausloeser „bei Anmeldung" +
+   15 s Verzoegerung, `Hidden`, kein Zeitlimit, `RestartCount 3` /
+   `RestartInterval 1 min`, `MultipleInstances IgnoreNew`, laeuft im
+   Akkubetrieb. Principal: aktueller Benutzer, `LogonType Interactive`,
+   `RunLevel Limited` → **kein Admin, kein gespeichertes Passwort**. Das
+   Skript entfernt zusaetzlich eine alte `.lnk` samt
+   `StartupApproved`-Registry-Wert und startet das Programm sofort.
+2. **`Uninstall-Autostart.ps1`** / **`usb/Deinstallieren.ps1`**:
+   `Unregister-ScheduledTask` (plus alte `.lnk`, falls vorhanden).
+3. **`Native.HideConsoleWindow()`** (neu): `GetConsoleWindow` + `ShowWindow
+   SW_HIDE`. `MonitorFocusFollow.ps1` ruft es direkt nach dem Kompilieren
+   auf, wenn **nicht** `-Log` gesetzt ist — gegen kurzes Fenster-Aufblitzen.
+
+**Ausloeser:** Autostart-Ordner-Eintraege lassen sich von „Aufraeum-"/
+Optimizer-Tools per Haeckchen deaktivieren; genau das war passiert. Eine
+geplante Aufgabe ist dagegen geschuetzt.
+
 ## Zukunftsidee: Multi-Seat (nicht v1)
 
 Ziel: zwei Mäuse + zwei Tastaturen, jede fest einem Monitor zugeordnet,

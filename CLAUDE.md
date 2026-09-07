@@ -5,7 +5,8 @@
 `monitor-focus-follow` setzt den Tastaturfokus automatisch auf das Fenster
 unter dem Mauszeiger, sobald sich dieses Fenster ändert – beim Wechsel
 zwischen zwei Monitoren **und** im Splitscreen auf einem Monitor. Ohne Klick.
-Windows/PowerShell, läuft versteckt per Autostart.
+Windows/PowerShell, läuft versteckt, gestartet über eine geplante Aufgabe
+(`MonitorFocusFollow`, Auslöser „bei Anmeldung").
 
 ## Wo weiterlesen (statt Code lesen)
 
@@ -25,7 +26,7 @@ Windows/PowerShell, läuft versteckt per Autostart.
 | `src/Native.cs` | eingebetteter C#-Helfer: alle Windows-API-Aufrufe (Cursor, Fenster, Fokus setzen, Maustasten, DPI) |
 | `config.psd1` | Einstellungen (Entprellung, Vollbild-/Maustaste-Pause, Ausschlussliste, Logdatei) |
 | `tests/FocusLogic.Tests.ps1` | Pester-Tests für `FocusLogic.psm1` |
-| `Install-Autostart.ps1` / `Uninstall-Autostart.ps1` | versteckte Autostart-Verknüpfung an/aus |
+| `Install-Autostart.ps1` / `Uninstall-Autostart.ps1` | geplante Aufgabe `MonitorFocusFollow` an/aus (Auslöser „bei Anmeldung", kein Admin nötig) |
 | `Build-Release.ps1` | baut `dist/monitor-focus-follow-usb.zip` für die Verteilung |
 | `usb/` | Doppelklick-Skripte fürs Verteilpaket: `Setup.cmd` (installieren), `Start-Portabel.cmd` (vom Stick), `Deinstallieren.cmd`, `LIESMICH.txt` |
 | `README.md` | Anleitung für Endnutzer |
@@ -42,8 +43,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\MonitorFocusFollow.ps1 -Lo
 # Nur ein Durchlauf (Selbsttest)
 powershell -NoProfile -ExecutionPolicy Bypass -File .\MonitorFocusFollow.ps1 -Once -Log
 
-# Autostart einrichten
+# Autostart einrichten (geplante Aufgabe, startet sofort mit)
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Install-Autostart.ps1
+
+# Autostart-Status prüfen
+Get-ScheduledTask -TaskName MonitorFocusFollow ; Get-ScheduledTaskInfo -TaskName MonitorFocusFollow
 
 # Verteilpaket bauen -> dist\monitor-focus-follow-usb.zip
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Build-Release.ps1
@@ -62,6 +66,10 @@ Doku auf Deutsch. Datenschutz beachten.
 ## Konventionen / Fallstricke
 
 - **Windows PowerShell 5.1** (`powershell.exe`), keine PS-7-only-Syntax.
+- **Autostart = geplante Aufgabe**, nicht mehr der Autostart-Ordner. Grund:
+  „Aufräum-"/Optimizer-Tools (Web Companion, Avast, Opera GX) hatten den
+  Autostart-Ordner-Eintrag abgeschaltet. Die Aufgabe läuft „nur wenn
+  angemeldet" mit RunLevel `Limited` – kein Admin, kein gespeichertes Passwort.
 - `Add-Type` für `src/Native.cs` braucht `-ReferencedAssemblies
   System.Windows.Forms, System.Drawing`.
 - Pester 5+ nötig (auf dem Entwicklungsrechner ist Pester 6 installiert).

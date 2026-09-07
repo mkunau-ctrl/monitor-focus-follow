@@ -136,6 +136,9 @@ try {
     $nativeSrc = Get-Content -LiteralPath "$PSScriptRoot\src\Native.cs" -Raw
     Add-Type -TypeDefinition $nativeSrc -ReferencedAssemblies System.Windows.Forms, System.Drawing -ErrorAction Stop
     Import-Module "$PSScriptRoot\src\FocusLogic.psm1" -Force
+    # Im Normalbetrieb (kein -Log) ein evtl. sichtbares Konsolenfenster
+    # sofort verstecken - der Autostart soll komplett unsichtbar laufen.
+    if (-not $Log) { [MFF.Native]::HideConsoleWindow() }
     [MFF.Native]::MakeDpiAware()
 }
 catch {
